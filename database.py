@@ -1,30 +1,30 @@
 import sqlite3
 from contextlib import contextmanager
 
-DATABASE = 'chat.db'
+DATABASE_FILE = 'chat.db'
 
 @contextmanager
-def get_db():
+def get_database_connection():
     """Manages database connections safely (auto-commits or rollback)."""
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row  # This allows access to columns by name.
-    conn.execute("PRAGMA foreign_keys = ON")    # Enable foreign keys.
+    database_connection = sqlite3.connect(DATABASE_FILE)
+    database_connection.row_factory = sqlite3.Row  # This allows access to columns by name.
+    database_connection.execute("PRAGMA foreign_keys = ON")    # Enable foreign keys.
     try:
-        yield conn
-        conn.commit()
+        yield database_connection
+        database_connection.commit()
     except Exception:
-        conn.rollback()
+        database_connection.rollback()
         raise
     finally:
-        conn.close()
+        database_connection.close()
 
-def init_db():
+def initialize_database():
     """Initializes the database by creating three tables: users, rooms, and messages."""
-    with get_db() as conn:
-        cursor = conn.cursor()
-        cursor.executescript('''
+    with get_database_connection() as database_connection:
+        database_cursor = database_connection.cursor()
+        database_cursor.executescript('''
             CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,        
+                user_id INTEGER PRIMARY KEY AUTOINCREMENT,      
                 username TEXT UNIQUE NOT NULL,
                 email TEXT UNIQUE NOT NULL,
                 password_hash TEXT NOT NULL,
@@ -32,22 +32,22 @@ def init_db():
             );
             
             CREATE TABLE IF NOT EXISTS rooms (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name text UNIQUE NOT NULL,
+                room_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                room_name text UNIQUE NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
                            
             CREATE TABLE IF NOT EXISTS messages (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                message_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL,
                 room_id INTEGER NOT NULL,
-                content TEXT NOT NULL,
-                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users (id),
-                FOREIGN KEY (room_id) REFERENCES rooms (id)
+                message_content TEXT NOT NULL,
+                message_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (user_id),
+                FOREIGN KEY (room_id) REFERENCES rooms (room_id)
             );
         ''')
     print("Database initialized successfully!")
 
 if __name__ == '__main__':
-    init_db()
+    initialize_database()
