@@ -21,8 +21,8 @@ def get_database_connection():
 def initialize_database():
     """Initializes the database by creating three tables: users, rooms, and messages."""
     with get_database_connection() as database_connection:
-        database_cursor = database_connection.cursor()
-        database_cursor.executescript('''
+        db_cursor = database_connection.cursor()
+        db_cursor.executescript('''
             CREATE TABLE IF NOT EXISTS users (
                 user_id INTEGER PRIMARY KEY AUTOINCREMENT,      
                 username TEXT UNIQUE NOT NULL,
