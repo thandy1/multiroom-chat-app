@@ -28,7 +28,7 @@ login_manager.login_view = 'login'  # Redirect to login page if not authenticate
 initialize_database()  
 
 class User:
-    """Represent a logged-in user to check user status."""
+    """Represents a logged-in user to check user status."""
     def __init__(self, user_id, username, email):
         self.user_id = user_id
         self.username = username
@@ -48,7 +48,7 @@ class User:
         """Returns the user ID that gets stored in the session cookie."""
         return str(self.user_id)
 
-@login_manager.user_loader  # Sets the callback for reloading a user from the session.
+@login_manager.user_loader  
 def load_user(user_id):
     """
     Loads a User object from the database using the user_id stored in the session cookie.
@@ -60,14 +60,15 @@ def load_user(user_id):
             '''SELECT user_id, username, email FROM users where user_id = ?''', (user_id,)
         )
 
-        # Fetch the data and check if it exists.
+        # Fetch the data and check if user_row exists.
         user_row = db_cursor.fetchone()
-        if user_row is not None:
+        if user_row:
             return User(
                 user_row['user_id'], 
                 user_row['username'], 
                 user_row['email']
                 )
+        return None
         
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -81,7 +82,6 @@ def register():
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password') or ''
-        # Hash the password for security.
         hashed_password = generate_password_hash(password) 
         # Try to insert the form data into the database.
         try:
@@ -90,17 +90,48 @@ def register():
                 db_cursor.execute(
                     '''INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)''', (username, email, hashed_password)
                 )
-        # Handle potential errors.
         except sqlite3.IntegrityError:
             flash("Username already exists,", 'error')
-        # On success (no errors).
         else:
             flash("Registration successful! Please log in.", 'success')
             return redirect(url_for('login'))
 
-    # If the request method is GET, render the template
-    # (or if POST failed and flashed error).
+    # If 'GET' or flash error, render the template.
     return render_template('register.html')
+
+@app.route('/login', methods=["POST", "GET"])
+def login():
+    """
+    """
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password') or ''
+        with get_database_connection() as database_connection:
+            db_cursor = database_connection.cursor()
+            db_cursor.execute(
+                '''SELECT user_id, username, email, password_hash FROM users WHERE username = ?
+                ''', (username,)
+            )
+            # Fetch the username from the database.
+            user_row = db_cursor.fetchone()
+            # Check if user_row exists
+            if user_row and check_password_hash(user_row['password_hash'], password):
+                    # Password correct - log them in.
+                    user = User(
+                        user_row['user_id'],
+                        user_row['username'],
+                        user_row['email']
+                    )
+                    login_user(user)
+                    return redirect(url_for('register'))    # Temporary
+            else:
+                # Either user doesn't exist OR password is wrong.
+                flash("Invalid username or password", 'error')
+
+    # If 'GET' or flash error, render the template.
+    return render_template('login.html')
+
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
+
