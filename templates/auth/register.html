@@ -7,6 +7,7 @@
 </head>
 <body>
     <h1>Create an Account</h1>
+    <!-- Flash messages section -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
@@ -15,6 +16,7 @@
         {% endif %}
     {% endwith %}
 
+    <!-- Form that posts to the register route. -->
     <form method="POST" action="{{ url_for('register') }}">
         <!-- input will be appended here. -->
          <div>

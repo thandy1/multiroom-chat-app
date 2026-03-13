@@ -59,9 +59,9 @@ def load_user(user_id):
         db_cursor.execute(
             '''SELECT user_id, username, email FROM users where user_id = ?''', (user_id,)
         )
-
-        # Fetch the data and check if user_row exists.
+        # Fetch the user's data (id, username, email, password_hash)
         user_row = db_cursor.fetchone()
+        # Check if user_row exists
         if user_row:
             return User(
                 user_row['user_id'], 
@@ -78,7 +78,6 @@ def register():
     POST: Process form submission, hash password, insert new user into database.
     """
     if request.method == 'POST':
-        # If the request method is POST, retrieve form data.
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password') or ''
@@ -97,11 +96,14 @@ def register():
             return redirect(url_for('login'))
 
     # If 'GET' or flash error, render the template.
-    return render_template('register.html')
+    return render_template('auth/register.html')
 
 @app.route('/login', methods=["POST", "GET"])
 def login():
     """
+    Handle user authentication.
+    GET: Render the login form.
+    POST: Query database for user, verify password hash, create session with login_user().
     """
     if request.method == 'POST':
         username = request.form.get('username')
@@ -112,7 +114,7 @@ def login():
                 '''SELECT user_id, username, email, password_hash FROM users WHERE username = ?
                 ''', (username,)
             )
-            # Fetch the username from the database.
+            # Fetch the user's data (id, username, email, password_hash)
             user_row = db_cursor.fetchone()
             # Check if user_row exists
             if user_row and check_password_hash(user_row['password_hash'], password):
@@ -129,7 +131,7 @@ def login():
                 flash("Invalid username or password", 'error')
 
     # If 'GET' or flash error, render the template.
-    return render_template('login.html')
+    return render_template('auth/login.html')
 
 
 if __name__ == '__main__':
