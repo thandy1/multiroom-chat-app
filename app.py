@@ -90,9 +90,9 @@ def register():
                     '''INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)''', (username, email, hashed_password)
                 )
         except sqlite3.IntegrityError:
-            flash("Username already exists,", 'error')
+            flash("Username already exists,", "error")
         else:
-            flash("Registration successful! Please log in.", 'success')
+            flash("Registration successful! Please log in.", "success")
             return redirect(url_for('login'))
 
     # If 'GET' or flash error, render the template.
@@ -125,13 +125,20 @@ def login():
                         user_row['email']
                     )
                     login_user(user)
-                    return redirect(url_for('register'))    # Temporary
+                    return redirect(url_for('register'))    # Temporary: change to landing/homepage
             else:
                 # Either user doesn't exist OR password is wrong.
                 flash("Invalid username or password", 'error')
 
     # If 'GET' or flash error, render the template.
     return render_template('auth/login.html')
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    flash("You have been logged out", "success")
+    return redirect(url_for("home"))    # Temporary: change to landing/homepage.
 
 
 if __name__ == '__main__':
