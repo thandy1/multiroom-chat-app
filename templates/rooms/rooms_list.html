@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Rooms List{% endblock %}
+
+{% block content %}
+
+    {% if rooms %}
+        <ul>
+            {% for room in rooms %}
+                <li>{{ room["room_name"] }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No rooms found. Create one!</p>
+    {% endif %}
+
+{% endblock %}

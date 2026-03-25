@@ -48,6 +48,7 @@ class User:
         """Returns the user ID that gets stored in the session cookie."""
         return str(self.user_id)
 
+
 @login_manager.user_loader  
 def load_user(user_id):
     """
@@ -69,7 +70,8 @@ def load_user(user_id):
                 user_row['email']
                 )
         return None
-        
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     """
@@ -97,6 +99,7 @@ def register():
 
     # If 'GET' or flash error, render the template.
     return render_template('auth/register.html')
+
 
 @app.route('/login', methods=["POST", "GET"])
 def login():
@@ -133,6 +136,7 @@ def login():
     # If 'GET' or flash error, render the template.
     return render_template('auth/login.html')
 
+
 @app.route("/logout")
 @login_required
 def logout():
@@ -140,10 +144,12 @@ def logout():
     flash("You have been logged out", "success")
     return redirect(url_for("home"))    
 
+
 @app.route("/")
 @login_required
 def home():
     return render_template("index.html")
+
 
 @app.route("/create_room", methods=["POST", "GET"])
 @login_required
@@ -171,6 +177,7 @@ def create_room():
     
     return render_template("rooms/create_room.html")
     
+
 @app.route("/rooms_list")
 @login_required
 def rooms_list():
@@ -185,7 +192,6 @@ def rooms_list():
         )
         rooms = db_cursor.fetchall()    # Get all rows
         return render_template("rooms/rooms_list.html", rooms=rooms)
-
 
 
 if __name__ == '__main__':
